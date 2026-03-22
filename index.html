@@ -56,298 +56,42 @@ body{font-family:-apple-system,sans-serif;background:#f0f4f8;color:#1e293b;min-h
 </style>
 </head>
 <body>
-
 <div id="root"></div>
 <input type="file" id="fi" accept="image/*" multiple hidden>
 <input type="file" id="zi" accept=".zip" hidden>
-
 <script>
-var P=[];
-var DM=false;
-var DS={};
-var SD=false;
-var SN='';
-var LM='';
-var EL=document.getElementById('root');
-
-function tst(m){
-  var t=document.createElement('div');
-  t.className='tst';
-  t.textContent=m;
-  document.body.appendChild(t);
-  setTimeout(function(){t.remove()},2000);
-}
-
-function dn(){
-  var d=new Date();
-  var y=d.getFullYear();
-  var m=String(d.getMonth()+1);
-  if(m.length<2)m='0'+m;
-  var dd=String(d.getDate());
-  if(dd.length<2)dd='0'+dd;
-  return y+'-'+m+'-'+dd+'_';
-}
-
-function ez(t){
-  if(!t)return '';
-  var o='';
-  for(var i=0;i<t.length;i++){
-    var ch=t.charAt(i);
-    if(ch==='<')o+='&#60;';
-    else if(ch==='>')o+='&#62;';
-    else if(ch==='&')o+='&#38;';
-    else if(ch==='"')o+='&#34;';
-    else o+=ch;
-  }
-  return o;
-}
-
-function zlib(cb){
-  if(typeof JSZip!=='undefined'){cb();return;}
-  var sc=document.createElement('script');
-  sc.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-  sc.onload=cb;
-  sc.onerror=function(){tst('JSZip load error');};
-  document.head.appendChild(sc);
-}
-
+var P=[];var DM=false;var DS={};var SD=false;var SN='';var LM='';var EL=document.getElementById('root');
+function tst(m){var t=document.createElement('div');t.className='tst';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},2000)}
+function dn(){var d=new Date();var y=d.getFullYear();var m=String(d.getMonth()+1);if(m.length<2)m='0'+m;var dd=String(d.getDate());if(dd.length<2)dd='0'+dd;return y+'-'+m+'-'+dd+'_'}
+function ez(t){if(!t)return '';var o='';for(var i=0;i<t.length;i++){var ch=t.charAt(i);if(ch==='<')o+='&#60;';else if(ch==='>')o+='&#62;';else if(ch==='&')o+='&#38;';else if(ch==='"')o+='&#34;';else o+=ch;}return o}
+function zlib(cb){if(typeof JSZip!=='undefined'){cb();return;}var sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';sc.onload=cb;sc.onerror=function(){tst('JSZip load error')};document.head.appendChild(sc)}
 function draw(){
-  try{
-    var h='';
-    h+='<div class="hdr">';
-    h+='<h1>&#128247; FieldSnap Go</h1>';
-    h+='<p>&#49324;&#51652;&#52524;&#50689; &#8594; &#49444;&#47749;&#51077;&#47141; &#8594; ZIP&#51200;&#51109; &#8594; &#48520;&#47084;&#50724;&#44592;</p>';
-    h+='</div>';
-
-    h+='<div class="bar">';
-    h+='<button class="b1" onclick="addP()">&#128247; &#49324;&#51652;&#52392;&#48512;</button>';
-    h+='<button class="b2" onclick="tgD()">&#128465; &#49324;&#51652;&#49325;&#51228;</button>';
-    h+='<button class="b3" onclick="opS()">&#128190; &#51200;&#51109;</button>';
-    h+='<button class="b4" onclick="ldZ()">&#128194; &#48520;&#47084;&#50724;&#44592;</button>';
-    h+='</div>';
-
-    if(P.length>0){
-      h+='<div class="info"><span>&#49324;&#51652; <b>'+P.length+'</b>/30&#51109;</span>';
-      if(!DM)h+='<span>&#49324;&#51652;&#49444;&#47749;&#51012; &#53552;&#52824;&#54644;&#49436; &#51077;&#47141;</span>';
-      h+='</div>';
-    }
-
-    if(DM){
-      var cc=0;
-      for(var k in DS){if(DS[k])cc++;}
-      h+='<div class="delbar"><span>&#49325;&#51228;&#54624; &#49324;&#51652; &#49440;&#53469;('+cc+')</span>';
-      h+='<div><button class="dx" onclick="tgD()">&#52712;&#49548;</button>';
-      h+='<button class="dc" onclick="cfD()">&#49325;&#51228;</button></div></div>';
-    }
-
-    h+='<div class="wrap">';
-    if(P.length===0){
-      h+='<div class="empty"><div>&#128248;</div>';
-      h+='<h3>&#49324;&#51652;&#51012; &#52392;&#48512;&#54644;&#51452;&#49464;&#50836;</h3>';
-      h+='<p>&#49324;&#51652;&#52392;&#48512; &#48260;&#53948;&#51012; &#45580;&#47084;<br>&#50808;&#44540; &#54788;&#51109; &#49324;&#51652;&#51012; &#52628;&#44032;&#54616;&#49464;&#50836;<br>(&#52572;&#45824; 30&#51109;)</p>';
-      h+='</div>';
-    }else{
-      h+='<div class="grid">';
-      for(var i=0;i<P.length;i++){
-        var p=P[i];
-        h+='<div class="item">';
-        h+='<textarea class="desc" data-i="'+i+'" placeholder="&#49324;&#51652;&#49444;&#47749;">'+ez(p.d)+'</textarea>';
-
-```
-    h+='<div class="imgbox"><img src="'+p.u+'"><div class="num">'+(i+1)+'</div>';
-    if(DM){
-      h+='<div class="chk'+(DS[i]?' on':'')+'" data-di="'+i+'">'+(DS[i]?'&#10003;':'')+'</div>';
-    }
-    h+='</div></div>';
-  }
-  h+='</div>';
-}
-h+='</div>';
-
-if(SD){
-  h+='<div class="ov" onclick="clS()">';
-  h+='<div class="dlg" onclick="event.stopPropagation()">';
-  h+='<h3>&#128190; &#51200;&#51109;&#54616;&#44592;</h3>';
-  h+='<p>&#54028;&#51068;&#47749; &#51077;&#47141; (.zip &#51088;&#46041;&#52628;&#44032;)</p>';
-  h+='<input id="sn" value="'+ez(SN)+'" placeholder="&#54028;&#51068;&#47749;">';
-  h+='<div class="dbtns"><button class="dno" onclick="clS()">&#52712;&#49548;</button>';
-  h+='<button class="dok" onclick="doS()">&#51200;&#51109;</button></div>';
-  h+='</div></div>';
-}
-
-if(LM){
-  h+='<div class="ldg"><div class="sp"></div><p>'+LM+'</p></div>';
-}
-
-EL.innerHTML=h;
-
-var tas=document.querySelectorAll('.desc');
-for(var j=0;j<tas.length;j++){
-  tas[j].addEventListener('input',function(){
-    var idx=parseInt(this.getAttribute('data-i'));
-    if(P[idx])P[idx].d=this.value;
-  });
-}
-
-var cks=document.querySelectorAll('.chk');
-for(var j=0;j<cks.length;j++){
-  cks[j].addEventListener('click',function(){
-    var idx=parseInt(this.getAttribute('data-di'));
-    DS[idx]=!DS[idx];
-    draw();
-  });
-}
-
-if(SD){
-  var si=document.getElementById('sn');
-  if(si){
-    si.focus();
-    si.selectionStart=si.value.length;
-    si.addEventListener('keydown',function(e){if(e.key==='Enter')doS();});
-  }
-}
-```
-
-}catch(err){
-EL.innerHTML=’<div style="padding:40px;text-align:center;color:red;font-weight:700">Error: ‘+err.message+’</div>’;
-}
-}
-
-function addP(){
-if(P.length>=30){tst(‘Max 30’);return;}
-var f=document.getElementById(‘fi’);
-f.value=’’;
-f.onchange=function(){
-var fl=[];
-for(var i=0;i<this.files.length;i++)fl.push(this.files[i]);
-var rm=30-P.length;
-if(fl.length>rm)fl=fl.slice(0,rm);
-LM=‘Processing…’;draw();
-var ld=0;
-for(var i=0;i<fl.length;i++){
-(function(file){
-sq(file,function(url){
-P.push({d:’’,u:url,n:file.name});
-ld++;
-if(ld===fl.length){LM=’’;draw();tst(fl.length+’ added’);}
-});
-})(fl[i]);
-}
-};
-f.click();
-}
-
-function sq(file,cb){
-var img=new Image();
-img.onload=function(){
-var w=img.width;
-var h=img.height;
-var sz=w<h?w:h;
-var sx=(w-sz)/2;
-var sy=(h-sz)/2;
-var c=document.createElement(‘canvas’);
-c.width=600;c.height=600;
-c.getContext(‘2d’).drawImage(img,sx,sy,sz,sz,0,0,600,600);
-cb(c.toDataURL(‘image/jpeg’,0.8));
-};
-img.onerror=function(){cb(’’);};
-img.src=URL.createObjectURL(file);
-}
-
-function tgD(){DM=!DM;DS={};draw();}
-
-function cfD(){
-var ids=[];
-for(var k in DS){if(DS[k])ids.push(parseInt(k));}
-if(ids.length===0){tst(‘Select photos’);return;}
-ids.sort(function(a,b){return b-a;});
-for(var i=0;i<ids.length;i++){P.splice(ids[i],1);}
-DM=false;DS={};draw();tst(ids.length+’ deleted’);
-}
-
-function opS(){
-if(P.length===0){tst(‘No photos’);return;}
-SN=dn();SD=true;draw();
-}
-
-function clS(){SD=false;draw();}
-
-function doS(){
-var si=document.getElementById(‘sn’);
-var nm=si?si.value.replace(/^\s+|\s+$/g,’’):’’;
-if(!nm){tst(‘Enter filename’);return;}
-SD=false;LM=‘Creating ZIP…’;draw();
-zlib(function(){
-setTimeout(function(){
 try{
-var z=new JSZip();
-var jd=[];
-for(var i=0;i<P.length;i++){
-var fn=‘photo_’;
-if(i+1<10)fn+=‘0’;
-fn+=(i+1)+’.jpg’;
-var b64=P[i].u.split(’,’)[1];
-z.file(fn,b64,{base64:true});
-jd.push({index:i+1,fileName:fn,description:P[i].d});
+var h='<div class="hdr"><h1>&#128247; FieldSnap Go</h1><p>&#49324;&#51652;&#52524;&#50689; &#8594; &#49444;&#47749;&#51077;&#47141; &#8594; ZIP&#51200;&#51109; &#8594; &#48520;&#47084;&#50724;&#44592;</p></div>';
+h+='<div class="bar"><button class="b1" onclick="addP()">&#128247; &#49324;&#51652;&#52392;&#48512;</button><button class="b2" onclick="tgD()">&#128465; &#49324;&#51652;&#49325;&#51228;</button><button class="b3" onclick="opS()">&#128190; &#51200;&#51109;</button><button class="b4" onclick="ldZ()">&#128194; &#48520;&#47084;&#50724;&#44592;</button></div>';
+if(P.length>0){h+='<div class="info"><span>&#49324;&#51652; <b>'+P.length+'</b>/30&#51109;</span>';if(!DM)h+='<span>&#49324;&#51652;&#49444;&#47749;&#51012; &#53552;&#52824;&#54644;&#49436; &#51077;&#47141;</span>';h+='</div>';}
+if(DM){var cc=0;for(var k in DS){if(DS[k])cc++;}h+='<div class="delbar"><span>&#49325;&#51228;&#54624; &#49324;&#51652; &#49440;&#53469;('+cc+')</span><div><button class="dx" onclick="tgD()">&#52712;&#49548;</button><button class="dc" onclick="cfD()">&#49325;&#51228;</button></div></div>';}
+h+='<div class="wrap">';
+if(P.length===0){h+='<div class="empty"><div>&#128248;</div><h3>&#49324;&#51652;&#51012; &#52392;&#48512;&#54644;&#51452;&#49464;&#50836;</h3><p>&#49324;&#51652;&#52392;&#48512; &#48260;&#53948;&#51012; &#45580;&#47084;<br>&#50808;&#44540; &#54788;&#51109; &#49324;&#51652;&#51012; &#52628;&#44032;&#54616;&#49464;&#50836;<br>(&#52572;&#45824; 30&#51109;)</p></div>';}
+else{h+='<div class="grid">';for(var i=0;i<P.length;i++){var p=P[i];h+='<div class="item"><textarea class="desc" data-i="'+i+'" placeholder="&#49324;&#51652;&#49444;&#47749;">'+ez(p.d)+'</textarea><div class="imgbox"><img src="'+p.u+'"><div class="num">'+(i+1)+'</div>';if(DM){h+='<div class="chk'+(DS[i]?' on':'')+'" data-di="'+i+'">'+(DS[i]?'&#10003;':'')+'</div>';}h+='</div></div>';}h+='</div>';}
+h+='</div>';
+if(SD){h+='<div class="ov" onclick="clS()"><div class="dlg" onclick="event.stopPropagation()"><h3>&#128190; &#51200;&#51109;&#54616;&#44592;</h3><p>&#54028;&#51068;&#47749; &#51077;&#47141; (.zip &#51088;&#46041;&#52628;&#44032;)</p><input id="sn" value="'+ez(SN)+'" placeholder="&#54028;&#51068;&#47749;"><div class="dbtns"><button class="dno" onclick="clS()">&#52712;&#49548;</button><button class="dok" onclick="doS()">&#51200;&#51109;</button></div></div></div>';}
+if(LM){h+='<div class="ldg"><div class="sp"></div><p>'+LM+'</p></div>';}
+EL.innerHTML=h;
+var tas=document.querySelectorAll('.desc');for(var j=0;j<tas.length;j++){tas[j].addEventListener('input',function(){var idx=parseInt(this.getAttribute('data-i'));if(P[idx])P[idx].d=this.value})}
+var cks=document.querySelectorAll('.chk');for(var j=0;j<cks.length;j++){cks[j].addEventListener('click',function(){var idx=parseInt(this.getAttribute('data-di'));DS[idx]=!DS[idx];draw()})}
+if(SD){var si=document.getElementById('sn');if(si){si.focus();si.selectionStart=si.value.length;si.addEventListener('keydown',function(e){if(e.key==='Enter')doS()})}}
+}catch(err){EL.innerHTML='<div style="padding:40px;text-align:center;color:red;font-weight:700">Error: '+err.message+'</div>'}
 }
-var json={title:nm,date:new Date().toISOString(),count:P.length,photos:jd};
-z.file(‘data.json’,JSON.stringify(json,null,2));
-z.generateAsync({type:‘blob’}).then(function(blob){
-var a=document.createElement(‘a’);
-a.href=URL.createObjectURL(blob);
-a.download=nm+’.zip’;
-document.body.appendChild(a);
-a.click();
-a.remove();
-LM=’’;draw();tst(‘Saved!’);
-});
-}catch(e){LM=’’;draw();tst(’Error: ’+e.message);}
-},100);
-});
-}
-
-function ldZ(){
-var f=document.getElementById(‘zi’);
-f.value=’’;
-f.onchange=function(){
-var file=this.files[0];
-if(!file)return;
-LM=‘Reading ZIP…’;draw();
-zlib(function(){
-JSZip.loadAsync(file).then(function(z){
-var jf=z.file(‘data.json’);
-if(!jf){LM=’’;draw();tst(‘Invalid ZIP’);return;}
-jf.async(‘string’).then(function(str){
-var data=JSON.parse(str);
-var list=data.photos||[];
-P=[];
-var ld=0;
-var tot=list.length;
-if(tot===0){LM=’’;draw();return;}
-for(var i=0;i<list.length;i++){
-(function(item){
-var img=z.file(item.fileName);
-if(img){
-img.async(‘base64’).then(function(b){
-P.push({d:item.description||’’,u:‘data:image/jpeg;base64,’+b,n:item.fileName});
-ld++;
-if(ld===tot){LM=’’;draw();tst(‘Loaded! ‘+tot+’ photos’);}
-});
-}else{
-ld++;
-if(ld===tot){LM=’’;draw();}
-}
-})(list[i]);
-}
-});
-}).catch(function(e){LM=’’;draw();tst(‘ZIP error’);});
-});
-};
-f.click();
-}
-
+function addP(){if(P.length>=30){tst('Max 30');return;}var f=document.getElementById('fi');f.value='';f.onchange=function(){var fl=[];for(var i=0;i<this.files.length;i++)fl.push(this.files[i]);var rm=30-P.length;if(fl.length>rm)fl=fl.slice(0,rm);LM='Processing...';draw();var ld=0;for(var i=0;i<fl.length;i++){(function(file){sq(file,function(url){P.push({d:'',u:url,n:file.name});ld++;if(ld===fl.length){LM='';draw();tst(fl.length+' added')}})})(fl[i])}};f.click()}
+function sq(file,cb){var img=new Image();img.onload=function(){var w=img.width;var h=img.height;var sz=w<h?w:h;var sx=(w-sz)/2;var sy=(h-sz)/2;var c=document.createElement('canvas');c.width=600;c.height=600;c.getContext('2d').drawImage(img,sx,sy,sz,sz,0,0,600,600);cb(c.toDataURL('image/jpeg',0.8))};img.onerror=function(){cb('')};img.src=URL.createObjectURL(file)}
+function tgD(){DM=!DM;DS={};draw()}
+function cfD(){var ids=[];for(var k in DS){if(DS[k])ids.push(parseInt(k))}if(ids.length===0){tst('Select photos');return}ids.sort(function(a,b){return b-a});for(var i=0;i<ids.length;i++){P.splice(ids[i],1)}DM=false;DS={};draw();tst(ids.length+' deleted')}
+function opS(){if(P.length===0){tst('No photos');return}SN=dn();SD=true;draw()}
+function clS(){SD=false;draw()}
+function doS(){var si=document.getElementById('sn');var nm=si?si.value.replace(/^\s+|\s+$/g,''):'';if(!nm){tst('Enter filename');return}SD=false;LM='Creating ZIP...';draw();zlib(function(){setTimeout(function(){try{var z=new JSZip();var jd=[];for(var i=0;i<P.length;i++){var fn='photo_';if(i+1<10)fn+='0';fn+=(i+1)+'.jpg';var b64=P[i].u.split(',')[1];z.file(fn,b64,{base64:true});jd.push({index:i+1,fileName:fn,description:P[i].d})}var json={title:nm,date:new Date().toISOString(),count:P.length,photos:jd};z.file('data.json',JSON.stringify(json,null,2));z.generateAsync({type:'blob'}).then(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nm+'.zip';document.body.appendChild(a);a.click();a.remove();LM='';draw();tst('Saved!')})}catch(e){LM='';draw();tst('Error: '+e.message)}},100)})}
+function ldZ(){var f=document.getElementById('zi');f.value='';f.onchange=function(){var file=this.files[0];if(!file)return;LM='Reading ZIP...';draw();zlib(function(){JSZip.loadAsync(file).then(function(z){var jf=z.file('data.json');if(!jf){LM='';draw();tst('Invalid ZIP');return}jf.async('string').then(function(str){var data=JSON.parse(str);var list=data.photos||[];P=[];var ld=0;var tot=list.length;if(tot===0){LM='';draw();return}for(var i=0;i<list.length;i++){(function(item){var img=z.file(item.fileName);if(img){img.async('base64').then(function(b){P.push({d:item.description||'',u:'data:image/jpeg;base64,'+b,n:item.fileName});ld++;if(ld===tot){LM='';draw();tst('Loaded! '+tot+' photos')}})}else{ld++;if(ld===tot){LM='';draw()}}})(list[i])}})}).catch(function(e){LM='';draw();tst('ZIP error')})})};f.click()}
 draw();
 </script>
-
 </body>
 </html>
