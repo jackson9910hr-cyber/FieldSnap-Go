@@ -8,15 +8,17 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,sans-serif;background:#f0f4f8;color:#1e293b;min-height:100vh}
-.hdr{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;padding:18px 20px}
+.hdr{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;padding:18px 20px;box-shadow:0 2px 12px rgba(37,99,235,0.25)}
 .hdr h1{font-size:18px;font-weight:800}
 .hdr p{font-size:11px;opacity:0.7;margin-top:4px}
-.bar{display:flex;gap:8px;padding:12px;background:#fff;border-bottom:1px solid #ddd;flex-wrap:wrap}
-.bar button{flex:1;min-width:70px;padding:10px 8px;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff}
-.b1{background:#2563eb}
-.b2{background:#fff;color:#ef4444;border:1px solid #ef4444}
-.b3{background:#10b981}
-.b4{background:#f59e0b}
+.bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:#fff;border-bottom:1px solid #e2e8f0}
+.bar button{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 10px;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.bar button:active{transform:scale(0.97)}
+.b1{background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.25)}
+.b2{background:#ef4444;color:#fff;box-shadow:0 2px 8px rgba(239,68,68,0.25)}
+.b3{background:#10b981;color:#fff;box-shadow:0 2px 8px rgba(16,185,129,0.25)}
+.b4{background:#f59e0b;color:#fff;box-shadow:0 2px 8px rgba(245,158,11,0.25)}
+.bi{font-size:16px}
 .info{padding:8px 12px;background:#fff;border-bottom:1px solid #eee;font-size:12px;color:#666;display:flex;justify-content:space-between}
 .info b{color:#2563eb}
 .wrap{padding:12px}
@@ -30,16 +32,17 @@ body{font-family:-apple-system,sans-serif;background:#f0f4f8;color:#1e293b;min-h
 .num{position:absolute;top:3px;left:3px;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px}
 .chk{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .chk.on{background:#ef4444;border-color:#ef4444}
-.delbar{background:#fff0f0;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #fcc}
+.delbar{background:#fef2f2;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #fecaca}
 .delbar span{color:#ef4444;font-size:13px;font-weight:700}
 .delbar button{padding:7px 14px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 .dc{background:#ef4444;color:#fff;margin-left:6px}
 .dx{background:#fff;color:#666;border:1px solid #ddd}
 .empty{text-align:center;padding:60px 20px;color:#999}
 .empty div:first-child{font-size:50px;margin-bottom:10px}
-.empty h3{color:#888;margin-bottom:4px}
+.empty h3{color:#666;font-size:16px;margin-bottom:6px}
+.empty p{font-size:13px;line-height:1.6}
 .ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-.dlg{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:340px}
+.dlg{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:340px;box-shadow:0 16px 48px rgba(0,0,0,0.15)}
 .dlg h3{font-size:16px;font-weight:800;margin-bottom:4px}
 .dlg p{font-size:12px;color:#888;margin-bottom:14px}
 .dlg input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;font-family:inherit}
@@ -68,7 +71,7 @@ function zlib(cb){if(typeof JSZip!=='undefined'){cb();return;}var sc=document.cr
 function draw(){
 try{
 var h='<div class="hdr"><h1>&#128247; FieldSnap Go</h1><p>&#49324;&#51652;&#52524;&#50689; &#8594; &#49444;&#47749;&#51077;&#47141; &#8594; ZIP&#51200;&#51109; &#8594; &#48520;&#47084;&#50724;&#44592;</p></div>';
-h+='<div class="bar"><button class="b1" onclick="addP()">&#128247; &#49324;&#51652;&#52392;&#48512;</button><button class="b2" onclick="tgD()">&#128465; &#49324;&#51652;&#49325;&#51228;</button><button class="b3" onclick="opS()">&#128190; &#51200;&#51109;</button><button class="b4" onclick="ldZ()">&#128194; &#48520;&#47084;&#50724;&#44592;</button></div>';
+h+='<div class="bar"><button class="b1" onclick="addP()"><span class="bi">&#128247;</span> &#49324;&#51652;&#52392;&#48512;</button><button class="b2" onclick="tgD()"><span class="bi">&#128465;</span> &#49324;&#51652;&#49325;&#51228;</button><button class="b3" onclick="opS()"><span class="bi">&#128190;</span> &#51200;&#51109;</button><button class="b4" onclick="ldZ()"><span class="bi">&#128194;</span> &#48520;&#47084;&#50724;&#44592;</button></div>';
 if(P.length>0){h+='<div class="info"><span>&#49324;&#51652; <b>'+P.length+'</b>/30&#51109;</span>';if(!DM)h+='<span>&#49324;&#51652;&#49444;&#47749;&#51012; &#53552;&#52824;&#54644;&#49436; &#51077;&#47141;</span>';h+='</div>';}
 if(DM){var cc=0;for(var k in DS){if(DS[k])cc++;}h+='<div class="delbar"><span>&#49325;&#51228;&#54624; &#49324;&#51652; &#49440;&#53469;('+cc+')</span><div><button class="dx" onclick="tgD()">&#52712;&#49548;</button><button class="dc" onclick="cfD()">&#49325;&#51228;</button></div></div>';}
 h+='<div class="wrap">';
