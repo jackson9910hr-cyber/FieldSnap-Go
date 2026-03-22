@@ -7,30 +7,26 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a2a3a">
 <title>FieldSnap Go</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;background:#f4f6f8;color:#1e293b;overflow:hidden}
 #app{height:100%;display:flex;flex-direction:column;max-width:768px;margin:0 auto}
 .header{background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:16px 20px;flex-shrink:0;box-shadow:0 2px 12px rgba(37,99,235,0.3)}
-.header h1{color:#fff;font-size:16px;font-weight:800;letter-spacing:-0.3px;line-height:1.4}
+.header h1{color:#fff;font-size:16px;font-weight:800;line-height:1.4}
 .header p{color:rgba(255,255,255,0.7);font-size:11px;margin-top:2px}
 .toolbar{display:flex;gap:8px;padding:12px 16px;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0;flex-wrap:wrap}
 .btn{display:flex;align-items:center;gap:6px;padding:10px 16px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;flex:1;justify-content:center;min-width:0}
 .btn:active{transform:scale(0.96)}
-.btn-photo{background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.3)}
+.btn-photo{background:#2563eb;color:#fff}
 .btn-del{background:#fff;color:#ef4444;border:1.5px solid #ef4444}
-.btn-save{background:#10b981;color:#fff;box-shadow:0 2px 8px rgba(16,185,129,0.3)}
-.btn-load{background:#f59e0b;color:#fff;box-shadow:0 2px 8px rgba(245,158,11,0.3)}
+.btn-save{background:#10b981;color:#fff}
+.btn-load{background:#f59e0b;color:#fff}
 .btn-icon{font-size:18px;flex-shrink:0}
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 24px}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:500px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}}
-.photo-item{position:relative;animation:fadeIn .3s ease}
-@keyframes fadeIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
+.photo-item{position:relative}
 .photo-desc{width:100%;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px 8px 0 0;font-size:11px;outline:none;font-family:inherit;color:#1e293b;background:#fff;resize:none;height:32px;line-height:1.4}
 .photo-desc:focus{border-color:#2563eb}
 .photo-desc::placeholder{color:#94a3b8}
@@ -47,7 +43,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Got
 .count-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0;font-size:12px;color:#64748b;font-weight:600}
 .count-num{color:#2563eb;font-weight:800}
 .overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;padding:24px}
-.dialog{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:fadeIn .25s ease}
+.dialog{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
 .dialog h3{font-size:17px;font-weight:800;color:#1e293b;margin-bottom:4px}
 .dialog p{font-size:13px;color:#64748b;margin-bottom:16px}
 .dialog-input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;outline:none;font-family:inherit;color:#1e293b}
@@ -64,6 +60,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Got
 .del-cancel{background:#fff;color:#64748b;border:1px solid #e2e8f0}
 .loading{position:fixed;top:0;left:0;right:0;bottom:0;z-index:300;background:rgba(255,255,255,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .loading-spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .loading p{margin-top:12px;font-size:14px;font-weight:600;color:#64748b}
 </style>
 </head>
@@ -72,41 +69,179 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Got
 <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
 <input type="file" id="zipInput" accept=".zip" style="display:none">
 <script>
-var photos=[];var delMode=false;var delSelected={};var showSaveDialog=false;var saveName='';var loadingMsg='';var Q=document.getElementById('app');
-function toast(m){var e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},2500)}
-function getDefaultName(){var d=new Date();var y=d.getFullYear();var m=String(d.getMonth()+1).padStart(2,'0');var dd=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+dd+'_'}
+var photos=[];
+var delMode=false;
+var delSelected={};
+var showSaveDialog=false;
+var saveName='';
+var loadingMsg='';
+var Q=document.getElementById('app');
+
+function toast(m){var e=document.createElement(‘div’);e.className=‘toast’;e.textContent=m;document.body.appendChild(e);setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},2500)}
+function getDefaultName(){var d=new Date();return d.getFullYear()+’-’+String(d.getMonth()+1).padStart(2,‘0’)+’-’+String(d.getDate()).padStart(2,‘0’)+’_’}
+function esc(t){if(!t)return ‘’;var r=’’,i,c;for(i=0;i<t.length;i++){c=t.charCodeAt(i);if(c===38)r+=’\x26amp;’;else if(c===60)r+=’\x26lt;’;else if(c===62)r+=’\x26gt;’;else if(c===34)r+=’\x26quot;’;else r+=t.charAt(i)}return r}
+function needZip(cb){if(typeof JSZip!==‘undefined’){cb();return}var s=document.createElement(‘script’);s.src=‘https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js’;s.onload=cb;s.onerror=function(){toast(‘JSZip load failed’)};document.head.appendChild(s)}
+
 function R(){
-var o='';
-o+='<div class="header"><h1>\ud83d\udcf7 FieldSnap Go</h1><p>\uc0ac\uc9c4 \ucd2c\uc601 \u2192 \uc124\uba85 \uc785\ub825 \u2192 ZIP \uc800\uc7a5 \u2192 \uc5b8\uc81c\ub4e0 \ubd88\ub7ec\uc624\uae30</p></div>';
-o+='<div class="toolbar">';
-o+='<button class="btn btn-photo" onclick="pickPhotos()"><span class="btn-icon">\ud83d\udcf7</span>\uc0ac\uc9c4\ucca8\ubd80</button>';
-o+='<button class="btn btn-del" onclick="toggleDel()"><span class="btn-icon">\ud83d\uddd1</span>\uc0ac\uc9c4\uc0ad\uc81c</button>';
-o+='<button class="btn btn-save" onclick="openSave()"><span class="btn-icon">\ud83d\udcbe</span>\uc800\uc7a5</button>';
-o+='<button class="btn btn-load" onclick="loadZip()"><span class="btn-icon">\ud83d\udcc2</span>\ubd88\ub7ec\uc624\uae30</button>';
-o+='</div>';
-if(photos.length>0){o+='<div class="count-bar"><span>\uc0ac\uc9c4 <span class="count-num">'+photos.length+'</span> / 30\uc7a5</span>';if(!delMode)o+='<span>\uc0ac\uc9c4\uc124\uba85\uc744 \ud130\uce58\ud574\uc11c \uc785\ub825\ud558\uc138\uc694</span>';o+='</div>';}
-if(delMode){var cnt=Object.keys(delSelected).filter(function(k){return delSelected[k]}).length;o+='<div class="del-bar"><span>\uc0ad\uc81c\ud560 \uc0ac\uc9c4 \uc120\ud0dd ('+cnt+'\uc7a5)</span><div><button class="del-cancel" onclick="toggleDel()">\ucde8\uc18c</button><button class="del-confirm" onclick="confirmDel()">\uc0ad\uc81c</button></div></div>';}
-o+='<div class="content">';
-if(photos.length===0){o+='<div class="empty"><div class="empty-icon">\ud83d\udcf8</div><h3>\uc0ac\uc9c4\uc744 \ucca8\ubd80\ud574\uc8fc\uc138\uc694</h3><p>\uc0ac\uc9c4\ucca8\ubd80 \ubc84\ud2bc\uc744 \ub20c\ub7ec<br>\uc678\uadfc \ud604\uc7a5 \uc0ac\uc9c4\uc744 \ucd94\uac00\ud558\uc138\uc694<br>(\ucd5c\ub300 30\uc7a5)</p></div>';}
-else{o+='<div class="grid">';for(var i=0;i<photos.length;i++){var p=photos[i];o+='<div class="photo-item"><textarea class="photo-desc" placeholder="\uc0ac\uc9c4\uc124\uba85" data-idx="'+i+'">'+esc(p.desc||'')+'</textarea><div class="photo-wrap"><img src="'+p.dataUrl+'"><div class="photo-num">'+(i+1)+'</div>';if(delMode)o+='<div class="photo-check show'+(delSelected[i]?' checked':'')+'" data-delidx="'+i+'">'+(delSelected[i]?'\u2713':'')+'</div>';o+='</div></div>';}o+='</div>';}
-o+='</div>';
-if(showSaveDialog){o+='<div class="overlay" onclick="closeSave()"><div class="dialog" onclick="event.stopPropagation()"><h3>\ud83d\udcbe \uc800\uc7a5\ud558\uae30</h3><p>\ud30c\uc77c\uba85\uc744 \uc785\ub825\ud558\uc138\uc694 (.zip \uc790\ub3d9 \ucd94\uac00)</p><input class="dialog-input" id="saveName" value="'+esc(saveName)+'" placeholder="\ud30c\uc77c\uba85"><div class="dialog-btns"><button class="dbtn-cancel" onclick="closeSave()">\ucde8\uc18c</button><button class="dbtn-ok" onclick="doSave()">\uc800\uc7a5</button></div></div></div>';}
-if(loadingMsg){o+='<div class="loading"><div class="loading-spinner"></div><p>'+loadingMsg+'</p></div>';}
-Q.innerHTML=o;
-document.querySelectorAll('.photo-desc').forEach(function(ta){ta.oninput=function(){var idx=parseInt(this.getAttribute('data-idx'));if(photos[idx])photos[idx].desc=this.value}});
-document.querySelectorAll('[data-delidx]').forEach(function(el){el.onclick=function(){var idx=parseInt(this.getAttribute('data-delidx'));delSelected[idx]=!delSelected[idx];R()}});
-if(showSaveDialog){var inp=document.getElementById('saveName');if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);inp.onkeydown=function(e){if(e.key==='Enter')doSave()}}}
+try{
+var o=’<div class="header"><h1>\ud83d\udcf7 FieldSnap Go</h1><p>\uc0ac\uc9c4\ucd2c\uc601 \u2192 \uc124\uba85\uc785\ub825 \u2192 ZIP\uc800\uc7a5 \u2192 \ubd88\ub7ec\uc624\uae30</p></div>’;
+o+=’<div class="toolbar">’;
+o+=’<button class="btn btn-photo" onclick="pickPhotos()"><span class="btn-icon">\ud83d\udcf7</span>\uc0ac\uc9c4\ucca8\ubd80</button>’;
+o+=’<button class="btn btn-del" onclick="toggleDel()"><span class="btn-icon">\ud83d\uddd1</span>\uc0ac\uc9c4\uc0ad\uc81c</button>’;
+o+=’<button class="btn btn-save" onclick="openSave()"><span class="btn-icon">\ud83d\udcbe</span>\uc800\uc7a5</button>’;
+o+=’<button class="btn btn-load" onclick="loadZip()"><span class="btn-icon">\ud83d\udcc2</span>\ubd88\ub7ec\uc624\uae30</button>’;
+o+=’</div>’;
+if(photos.length>0){
+o+=’<div class="count-bar"><span>\uc0ac\uc9c4 <span class="count-num">’+photos.length+’</span>/30</span>’;
+if(!delMode)o+=’<span>\uc0ac\uc9c4\uc124\uba85\uc744 \ud130\uce58\ud574\uc11c \uc785\ub825</span>’;
+o+=’</div>’;
 }
-function esc(t){if(!t)return '';var r='',i,c;for(i=0;i<t.length;i++){c=t.charCodeAt(i);if(c===38)r+='\x26amp;';else if(c===60)r+='\x26lt;';else if(c===62)r+='\x26gt;';else if(c===34)r+='\x26quot;';else r+=t.charAt(i)}return r}
-function pickPhotos(){if(photos.length>=30){toast('\ucd5c\ub300 30\uc7a5');return}var fi=document.getElementById('fileInput');fi.value='';fi.onchange=function(){var files=Array.from(this.files);var remain=30-photos.length;if(files.length>remain){toast(remain+'\uc7a5\ub9cc \uac00\ub2a5');files=files.slice(0,remain)}loadingMsg='\uc0ac\uc9c4 \ucc98\ub9ac\uc911...';R();var loaded=0;files.forEach(function(file){cropSquare(file,function(dataUrl){photos.push({desc:'',dataUrl:dataUrl,fileName:file.name});loaded++;if(loaded===files.length){loadingMsg='';R();toast(files.length+'\uc7a5 \ucca8\ubd80')}})})};fi.click()}
-function cropSquare(file,cb){var img=new Image();img.onload=function(){var w=img.width,h=img.height;var size=Math.min(w,h);var sx=(w-size)/2,sy=(h-size)/2;var canvas=document.createElement('canvas');canvas.width=600;canvas.height=600;canvas.getContext('2d').drawImage(img,sx,sy,size,size,0,0,600,600);cb(canvas.toDataURL('image/jpeg',0.8))};img.onerror=function(){cb('')};img.src=URL.createObjectURL(file)}
+if(delMode){
+var cnt=Object.keys(delSelected).filter(function(k){return delSelected[k]}).length;
+o+=’<div class="del-bar"><span>\uc0ad\uc81c\ud560 \uc0ac\uc9c4 \uc120\ud0dd(’+cnt+’)</span><div><button class="del-cancel" onclick="toggleDel()">\ucde8\uc18c</button><button class="del-confirm" onclick="confirmDel()">\uc0ad\uc81c</button></div></div>’;
+}
+o+=’<div class="content">’;
+if(photos.length===0){
+o+=’<div class="empty"><div class="empty-icon">\ud83d\udcf8</div><h3>\uc0ac\uc9c4\uc744 \ucca8\ubd80\ud574\uc8fc\uc138\uc694</h3><p>\uc0ac\uc9c4\ucca8\ubd80 \ubc84\ud2bc\uc744 \ub20c\ub7ec<br>\uc678\uadfc \ud604\uc7a5 \uc0ac\uc9c4\uc744 \ucd94\uac00\ud558\uc138\uc694<br>(\ucd5c\ub300 30\uc7a5)</p></div>’;
+}else{
+o+=’<div class="grid">’;
+for(var i=0;i<photos.length;i++){
+var p=photos[i];
+o+=’<div class="photo-item">’;
+o+=’<textarea class="photo-desc" placeholder="\uc0ac\uc9c4\uc124\uba85" data-idx="'+i+'">’+esc(p.desc||’’)+’</textarea>’;
+o+=’<div class="photo-wrap"><img src="'+p.dataUrl+'"><div class="photo-num">’+(i+1)+’</div>’;
+if(delMode)o+=’<div class="photo-check show'+(delSelected[i]?' checked':'')+'" data-delidx="'+i+'">’+(delSelected[i]?’\u2713’:’’)+’</div>’;
+o+=’</div></div>’;
+}
+o+=’</div>’;
+}
+o+=’</div>’;
+if(showSaveDialog){
+o+=’<div class="overlay" onclick="closeSave()"><div class="dialog" onclick="event.stopPropagation()">’;
+o+=’<h3>\ud83d\udcbe \uc800\uc7a5</h3><p>\ud30c\uc77c\uba85 \uc785\ub825 (.zip \uc790\ub3d9\ucd94\uac00)</p>’;
+o+=’<input class="dialog-input" id="saveName" value="'+esc(saveName)+'" placeholder="\ud30c\uc77c\uba85">’;
+o+=’<div class="dialog-btns"><button class="dbtn-cancel" onclick="closeSave()">\ucde8\uc18c</button><button class="dbtn-ok" onclick="doSave()">\uc800\uc7a5</button></div>’;
+o+=’</div></div>’;
+}
+if(loadingMsg){
+o+=’<div class="loading"><div class="loading-spinner"></div><p>’+loadingMsg+’</p></div>’;
+}
+Q.innerHTML=o;
+document.querySelectorAll(’.photo-desc’).forEach(function(ta){
+ta.oninput=function(){var idx=parseInt(this.getAttribute(‘data-idx’));if(photos[idx])photos[idx].desc=this.value};
+});
+document.querySelectorAll(’[data-delidx]’).forEach(function(el){
+el.onclick=function(){var idx=parseInt(this.getAttribute(‘data-delidx’));delSelected[idx]=!delSelected[idx];R()};
+});
+if(showSaveDialog){var inp=document.getElementById(‘saveName’);if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);inp.onkeydown=function(e){if(e.key===‘Enter’)doSave()}}}
+}catch(err){Q.innerHTML=’<div style="padding:40px;text-align:center;color:red">Error: ‘+err.message+’</div>’}
+}
+
+function pickPhotos(){
+if(photos.length>=30){toast(’\ucd5c\ub300 30\uc7a5’);return}
+var fi=document.getElementById(‘fileInput’);fi.value=’’;
+fi.onchange=function(){
+var files=Array.from(this.files);
+var remain=30-photos.length;
+if(files.length>remain)files=files.slice(0,remain);
+loadingMsg=’\uc0ac\uc9c4 \ucc98\ub9ac\uc911…’;R();
+var loaded=0;
+files.forEach(function(file){
+cropSquare(file,function(dataUrl){
+photos.push({desc:’’,dataUrl:dataUrl,fileName:file.name});
+loaded++;
+if(loaded===files.length){loadingMsg=’’;R();toast(files.length+’\uc7a5 \ucca8\ubd80’)}
+});
+});
+};
+fi.click();
+}
+
+function cropSquare(file,cb){
+var img=new Image();
+img.onload=function(){
+var w=img.width,h=img.height,size=Math.min(w,h);
+var sx=(w-size)/2,sy=(h-size)/2;
+var c=document.createElement(‘canvas’);c.width=600;c.height=600;
+c.getContext(‘2d’).drawImage(img,sx,sy,size,size,0,0,600,600);
+cb(c.toDataURL(‘image/jpeg’,0.8));
+};
+img.onerror=function(){cb(’’)};
+img.src=URL.createObjectURL(file);
+}
+
 function toggleDel(){delMode=!delMode;delSelected={};R()}
-function confirmDel(){var indices=Object.keys(delSelected).filter(function(k){return delSelected[k]}).map(Number).sort(function(a,b){return b-a});if(indices.length===0){toast('\uc0ac\uc9c4\uc744 \uc120\ud0dd\ud558\uc138\uc694');return}indices.forEach(function(i){photos.splice(i,1)});delMode=false;delSelected={};R();toast(indices.length+'\uc7a5 \uc0ad\uc81c')}
-function openSave(){if(photos.length===0){toast('\uc0ac\uc9c4\uc774 \uc5c6\uc2b5\ub2c8\ub2e4');return}saveName=getDefaultName();showSaveDialog=true;R()}
+
+function confirmDel(){
+var indices=Object.keys(delSelected).filter(function(k){return delSelected[k]}).map(Number).sort(function(a,b){return b-a});
+if(!indices.length){toast(’\uc0ac\uc9c4 \uc120\ud0dd\ud558\uc138\uc694’);return}
+indices.forEach(function(i){photos.splice(i,1)});
+delMode=false;delSelected={};R();toast(indices.length+’\uc7a5 \uc0ad\uc81c’);
+}
+
+function openSave(){
+if(!photos.length){toast(’\uc0ac\uc9c4\uc774 \uc5c6\uc2b5\ub2c8\ub2e4’);return}
+saveName=getDefaultName();showSaveDialog=true;R();
+}
 function closeSave(){showSaveDialog=false;R()}
-function doSave(){var inp=document.getElementById('saveName');var name=inp?inp.value.trim():'';if(!name){toast('\ud30c\uc77c\uba85\uc744 \uc785\ub825\ud558\uc138\uc694');return}showSaveDialog=false;loadingMsg='ZIP \uc0dd\uc131\uc911...';R();setTimeout(function(){try{var zip=new JSZip();var jsonData=[];for(var i=0;i<photos.length;i++){var p=photos[i];var fname='photo_'+String(i+1).padStart(2,'0')+'.jpg';var base64=p.dataUrl.split(',')[1];zip.file(fname,base64,{base64:true});jsonData.push({index:i+1,fileName:fname,description:p.desc||''})}zip.file('data.json',JSON.stringify({title:name,createdAt:new Date().toISOString(),photoCount:photos.length,photos:jsonData},null,2));zip.generateAsync({type:'blob'}).then(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'.zip';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);loadingMsg='';R();toast('\uc800\uc7a5 \uc644\ub8cc! \ud83d\udcbe')}).catch(function(e){loadingMsg='';R();toast('Error: '+e.message)})}catch(e){loadingMsg='';R();toast('Error: '+e.message)}},100)}
-function loadZip(){var fi=document.getElementById('zipInput');fi.value='';fi.onchange=function(){var file=this.files[0];if(!file)return;loadingMsg='ZIP \uc77d\ub294\uc911...';R();JSZip.loadAsync(file).then(function(zip){var jsonFile=zip.file('data.json');if(!jsonFile){loadingMsg='';R();toast('\uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 ZIP');return}jsonFile.async('string').then(function(jsonStr){var data=JSON.parse(jsonStr);var photoList=data.photos||[];photos=[];var loaded=0;var total=photoList.length;if(total===0){loadingMsg='';R();toast('\uc0ac\uc9c4 \uc5c6\uc74c');return}photoList.forEach(function(item){var imgFile=zip.file(item.fileName);if(imgFile){imgFile.async('base64').then(function(b64){photos.push({desc:item.description||'',dataUrl:'data:image/jpeg;base64,'+b64,fileName:item.fileName});loaded++;if(loaded===total){loadingMsg='';R();toast('\ubd88\ub7ec\uc624\uae30 \uc644\ub8cc! '+total+'\uc7a5')}}).catch(function(){loaded++;if(loaded===total){loadingMsg='';R()}})}else{loaded++;if(loaded===total){loadingMsg='';R()}}})}).catch(function(e){loadingMsg='';R();toast('JSON error: '+e.message)})}).catch(function(e){loadingMsg='';R();toast('ZIP error: '+e.message)})};fi.click()}
+
+function doSave(){
+var inp=document.getElementById(‘saveName’);
+var name=inp?inp.value.trim():’’;
+if(!name){toast(’\ud30c\uc77c\uba85 \uc785\ub825’);return}
+showSaveDialog=false;loadingMsg=‘ZIP \uc0dd\uc131\uc911…’;R();
+needZip(function(){
+setTimeout(function(){
+try{
+var zip=new JSZip();var jd=[];
+for(var i=0;i<photos.length;i++){
+var p=photos[i];
+var fn=‘photo_’+String(i+1).padStart(2,‘0’)+’.jpg’;
+zip.file(fn,p.dataUrl.split(’,’)[1],{base64:true});
+jd.push({index:i+1,fileName:fn,description:p.desc||’’});
+}
+zip.file(‘data.json’,JSON.stringify({title:name,createdAt:new Date().toISOString(),photoCount:photos.length,photos:jd},null,2));
+zip.generateAsync({type:‘blob’}).then(function(blob){
+var a=document.createElement(‘a’);a.href=URL.createObjectURL(blob);a.download=name+’.zip’;
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+loadingMsg=’’;R();toast(’\uc800\uc7a5 \uc644\ub8cc!’);
+}).catch(function(e){loadingMsg=’’;R();toast(‘Error: ‘+e.message)});
+}catch(e){loadingMsg=’’;R();toast(’Error: ’+e.message)}
+},100);
+});
+}
+
+function loadZip(){
+var fi=document.getElementById(‘zipInput’);fi.value=’’;
+fi.onchange=function(){
+var file=this.files[0];if(!file)return;
+loadingMsg=‘ZIP \uc77d\ub294\uc911…’;R();
+needZip(function(){
+JSZip.loadAsync(file).then(function(zip){
+var jf=zip.file(‘data.json’);
+if(!jf){loadingMsg=’’;R();toast(’\uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 ZIP’);return}
+jf.async(‘string’).then(function(js){
+var data=JSON.parse(js);var pl=data.photos||[];
+photos=[];var loaded=0;var total=pl.length;
+if(!total){loadingMsg=’’;R();return}
+pl.forEach(function(item){
+var imgf=zip.file(item.fileName);
+if(imgf){
+imgf.async(‘base64’).then(function(b64){
+photos.push({desc:item.description||’’,dataUrl:‘data:image/jpeg;base64,’+b64,fileName:item.fileName});
+loaded++;if(loaded===total){loadingMsg=’’;R();toast(’\ubd88\ub7ec\uc624\uae30 \uc644\ub8cc! ‘+total+’\uc7a5’)}
+}).catch(function(){loaded++;if(loaded===total){loadingMsg=’’;R()}});
+}else{loaded++;if(loaded===total){loadingMsg=’’;R()}}
+});
+}).catch(function(e){loadingMsg=’’;R();toast(‘Error: ‘+e.message)});
+}).catch(function(e){loadingMsg=’’;R();toast(’Error: ’+e.message)});
+});
+};
+fi.click();
+}
+
 R();
 </script>
+
 </body>
 </html>
